@@ -100,7 +100,7 @@ export function evaluateAccess(ctx: PolicyContext): AccessDecision {
   // No implicit privileges for health, safeguarding, or technical administrators.
   if (r.classification !== 'STANDARD') return deny('SENSITIVE_POLICY_UNDECIDED');
   if (p.kind === 'guardian') {
-    // Published-only SAN guardian read. Other owners require approved owner contracts.
+    // Published-only guardian read. Export and write require separate approved policies.
     if (ctx.action !== 'record.read' || r.owner !== 'SAN') return deny('NO_AUTHORITY');
     if (!r.published) return deny('NOT_PUBLISHED');
     const authorized = ctx.guardianRelations.some(g =>
