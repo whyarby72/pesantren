@@ -1,0 +1,46 @@
+name: GAQI — Quota-Aware CI
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gaqi-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  gaqi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout without write credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Use a stable Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Plan tests from checked-out diff (fallback full)
+        id: scope
+        env:
+          GAQI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          GAQI_HEAD_SHA: ${{ github.sha }}
+        run: node scripts/gaqi/ci.mjs plan --github-output "$GITHUB_OUTPUT"
+      - name: Mandatory safety scan (never path-skipped)
+        run: node scripts/gaqi/ci.mjs security
+      - name: Mandatory GAQI regression tests
+        run: node --test scripts/gaqi/ci.test.mjs
+      - name: Affected application / contract tests
+        if: steps.scope.outputs.tests == 'true'
+        run: npm test
+      - name: Typecheck affected TypeScript (never silently skip)
+        if: steps.scope.outputs.typecheck == 'true'
+        run: |
+          npm exec --yes --package=typescript@5.9.3 -- tsc --noEmit

@@ -1,0 +1,13 @@
+{
+  "name": "sistem-manajemen-pesantren",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Baseline struktur untuk Sistem Manajemen Pesantren Modern.",
+  "packageManager": "npm@10",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test",
+    "security:scan": "git grep -n -I -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{20,}|xox[baprs]-|password[[:space:]]*[:=])' -- . ':(exclude)docs/product-sources' || true"
+  }
+}
