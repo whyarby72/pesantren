@@ -1,0 +1,66 @@
+name: IMTAQ Web Build
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/imtaq-web.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  web-build:
+    name: web-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.21.0'
+      - name: Verify pin and local tests
+        working-directory: apps/web
+        run: |
+          node -e "if (process.versions.node !== '24.21.0') process.exit(1)"
+          npm test
+      - name: Install exact core dependencies and generate build lock
+        working-directory: apps/web
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify framework versions and strict TypeScript
+        working-directory: apps/web
+        run: |
+          node -e "const p=require('./package.json'); for (const [n,v] of Object.entries({next:'16.4.0', react:'19.3.0', 'react-dom':'19.3.0'})) if(p.dependencies[n]!==v) throw Error(n + ' is not pinned')"
+          npm run typecheck
+      - name: Build standalone Next.js
+        working-directory: apps/web
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: npm run build
+      - name: Package Passenger distribution
+        working-directory: apps/web
+        run: bash deploy/package-passenger.sh
+      - name: Smoke test standalone HTTP
+        working-directory: apps/web/.passenger-dist
+        run: |
+          set -e
+          PORT=32345 HOSTNAME=127.0.0.1 node app.js > /tmp/imtaq-smoke.log 2>&1 & pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fSs -o /dev/null http://127.0.0.1:32345/; then break; fi
+            sleep 1
+          done
+          for p in / /akademik /ketahfizhan /kesantrian /keuangan; do
+            curl -fsS -o /tmp/response.html "http://127.0.0.1:32345$p"
+            grep -q IMTAQ /tmp/response.html
+          done
+          code="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:32345/not-a-real-module)"
+          [ "$code" = 404 ]
+      - name: Upload reviewed Passenger build artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: imtaq-passenger-node24
+          path: apps/web/imtaq-passenger.zip
+          if-no-files-found: error
+          retention-days: 7
