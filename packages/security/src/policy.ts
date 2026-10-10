@@ -24,12 +24,14 @@ export interface ResourceScope {
 }
 export interface ModuleEvidence {
   readonly moduleId: string;
+  readonly owner: DomainOwner;
   readonly installed: boolean;
   readonly deployed: boolean;
   readonly enabled: boolean;
 }
 export interface RoleGrantEvidence {
   readonly principalRef: string;
+  readonly recordRef: string;
   readonly role: string;
   readonly unitRef: string;
   readonly actions: readonly Action[];
@@ -93,7 +95,7 @@ export function evaluateAccess(ctx: PolicyContext): AccessDecision {
       !OWNERS.has(r.owner) || !CLASSES.has(r.classification) ||
       typeof r.published !== 'boolean' || !Array.isArray(p.roles)) return deny('INVALID_CONTEXT');
   const m = ctx.module;
-  if (!m || m.moduleId !== r.moduleId || !m.installed || !m.deployed || !m.enabled)
+  if (!m || m.moduleId !== r.moduleId || m.owner !== r.owner || !m.installed || !m.deployed || !m.enabled)
     return deny('MODULE_UNAVAILABLE');
   // No implicit privileges for health, safeguarding, or technical administrators.
   if (r.classification !== 'STANDARD') return deny('SENSITIVE_POLICY_UNDECIDED');
@@ -109,7 +111,7 @@ export function evaluateAccess(ctx: PolicyContext): AccessDecision {
   }
   if (p.kind !== 'staff' && p.kind !== 'service') return deny('NO_AUTHORITY');
   const authorized = ctx.roleGrants.some(g =>
-    g.principalRef === p.ref && p.roles.includes(g.role) && g.unitRef === r.unitRef &&
+    g.principalRef === p.ref && g.recordRef === r.recordRef && p.roles.includes(g.role) && g.unitRef === r.unitRef &&
     g.actions.includes(ctx.action) && effective(now, g.validFrom, g.validUntil, g.revoked));
   return authorized ? { allowed: true, code: 'ALLOW' } : deny('NO_AUTHORITY');
 }
