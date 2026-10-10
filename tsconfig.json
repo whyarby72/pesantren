@@ -9,12 +9,6 @@
     "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": true
   },
-  "include": [
-    "packages/**/*.ts",
-    "platform/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["packages/**/*.ts", "platform/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
