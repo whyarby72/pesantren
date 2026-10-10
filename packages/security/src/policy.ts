@@ -30,6 +30,8 @@ export interface ModuleEvidence {
   readonly enabled: boolean;
 }
 export interface RoleGrantEvidence {
+  readonly owner: DomainOwner;
+  readonly moduleId: string;
   readonly principalRef: string;
   readonly recordRef: string;
   readonly role: string;
@@ -41,6 +43,7 @@ export interface RoleGrantEvidence {
 }
 /** SAN-owned relationship claim, not an IAM-owned child record. */
 export interface GuardianEvidence {
+  readonly moduleId: string;
   readonly guardianRef: string;
   readonly recordRef: string;
   readonly unitRef: string;
@@ -61,7 +64,7 @@ export interface PolicyContext {
 }
 export type DenialCode =
   | 'UNAUTHENTICATED' | 'INVALID_CONTEXT' | 'MODULE_UNAVAILABLE'
-  | 'SENSITIVE_POLICY_UNDECIDED' | 'NO_AUTHORITY' | 'NOT_PUBLISHED';
+  | 'SENSITIVE_POLICY_UNDECIDED' | 'PRIVILEGED_ACTION_UNDECIDED' | 'NO_AUTHORITY' | 'NOT_PUBLISHED';
 export type AccessDecision =
   | { readonly allowed: true; readonly code: 'ALLOW' }
   | { readonly allowed: false; readonly code: DenialCode };
@@ -79,40 +82,48 @@ function instant(value: unknown): number | null {
 function effective(now: number, start: string, end: string | undefined, revoked: boolean): boolean {
   const from = instant(start);
   const to = end === undefined ? undefined : instant(end);
-  return !revoked && from !== null && from <= now &&
+  return revoked === false && from !== null && from <= now &&
     (to === undefined || (to !== null && now < to)) &&
     (to === undefined || (to !== null && to > from));
 }
 const deny = (code: DenialCode): AccessDecision => ({ allowed: false, code });
 
 export function evaluateAccess(ctx: PolicyContext): AccessDecision {
-  const p = ctx.principal;
-  if (!p || !p.active || !p.sessionValid || !nonblank(p.ref)) return deny('UNAUTHENTICATED');
+  const p = ctx?.principal;
+  if (!p || p.active !== true || p.sessionValid !== true || !nonblank(p.ref)) return deny('UNAUTHENTICATED');
   const r = ctx.resource;
   const now = instant(ctx.now);
   if (now === null || !ACTIONS.has(ctx.action) || !r ||
       !nonblank(r.recordRef) || !nonblank(r.unitRef) || !nonblank(r.moduleId) ||
       !OWNERS.has(r.owner) || !CLASSES.has(r.classification) ||
-      typeof r.published !== 'boolean' || !Array.isArray(p.roles)) return deny('INVALID_CONTEXT');
+      typeof r.published !== 'boolean' || !Array.isArray(p.roles) ||
+      !Array.isArray(ctx.roleGrants) || !Array.isArray(ctx.guardianRelations)) return deny('INVALID_CONTEXT');
   const m = ctx.module;
-  if (!m || m.moduleId !== r.moduleId || m.owner !== r.owner || !m.installed || !m.deployed || !m.enabled)
+  if (!m || m.moduleId !== r.moduleId || m.owner !== r.owner || m.installed !== true || m.deployed !== true || m.enabled !== true)
     return deny('MODULE_UNAVAILABLE');
   // No implicit privileges for health, safeguarding, or technical administrators.
   if (r.classification !== 'STANDARD') return deny('SENSITIVE_POLICY_UNDECIDED');
+  // No institution-approved write, export, or background-worker policy in F0.
+  if (ctx.action !== 'record.read') return deny('PRIVILEGED_ACTION_UNDECIDED');
   if (p.kind === 'guardian') {
     // Published-only guardian read. Export and write require separate approved policies.
     if (ctx.action !== 'record.read' || r.owner !== 'SAN') return deny('NO_AUTHORITY');
     if (!r.published) return deny('NOT_PUBLISHED');
     const authorized = ctx.guardianRelations.some(g =>
-      g.guardianRef === p.ref && g.recordRef === r.recordRef && g.unitRef === r.unitRef &&
-      g.verification === 'VERIFIED' && g.actions.includes(ctx.action) &&
+      g !== null && typeof g === 'object' &&
+      g.moduleId === r.moduleId && g.guardianRef === p.ref &&
+      g.recordRef === r.recordRef && g.unitRef === r.unitRef &&
+      g.verification === 'VERIFIED' && Array.isArray(g.actions) && g.actions.includes(ctx.action) &&
       effective(now, g.validFrom, g.validUntil, g.revoked));
     return authorized ? { allowed: true, code: 'ALLOW' } : deny('NO_AUTHORITY');
   }
   if (p.kind !== 'staff' && p.kind !== 'service') return deny('NO_AUTHORITY');
   const authorized = ctx.roleGrants.some(g =>
-    g.principalRef === p.ref && g.recordRef === r.recordRef && p.roles.includes(g.role) && g.unitRef === r.unitRef &&
-    g.actions.includes(ctx.action) && effective(now, g.validFrom, g.validUntil, g.revoked));
+    g !== null && typeof g === 'object' && g.owner === r.owner && g.moduleId === r.moduleId &&
+    g.principalRef === p.ref && g.recordRef === r.recordRef &&
+    p.roles.includes(g.role) && g.unitRef === r.unitRef &&
+    Array.isArray(g.actions) && g.actions.includes(ctx.action) &&
+    effective(now, g.validFrom, g.validUntil, g.revoked));
   return authorized ? { allowed: true, code: 'ALLOW' } : deny('NO_AUTHORITY');
 }
 
