@@ -8,6 +8,7 @@ function Navigation({active}:{active?:string}) {
     <Link className={`nav-link ${!active?'is-active':''}`} href="/"><Icon name="home" size={19}/> <span>Ringkasan</span></Link>
     <span className="nav-heading nav-heading-spaced">EMPAT DOMAIN</span>
     {modules.map(m=><Link key={m.key} className={`nav-link ${active===m.key?'is-active':''}`} href={`/${m.key}`}><Icon name={m.icon} size={19}/><span>{m.label}</span><small>{m.code}</small></Link>)}
+    <Link className="nav-link at-sidebar-link" href="/akademik/absensi"><Icon name="calendar" size={17}/><span>Absensi akademik</span><small>DEMO</small></Link>
     <span className="nav-heading nav-heading-spaced">LAYANAN PENDUKUNG</span>
     <div className="nav-link is-disabled"><Icon name="shield" size={19}/><span>IAM & Audit</span><span className="nav-soon">Nanti</span></div>
     <div className="nav-link is-disabled"><Icon name="layers" size={19}/><span>Module Manager</span><span className="nav-soon">Nanti</span></div>

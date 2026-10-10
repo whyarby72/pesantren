@@ -51,12 +51,14 @@ jobs:
             if curl -fSs -o /dev/null http://127.0.0.1:32345/; then break; fi
             sleep 1
           done
-          for p in / /akademik /ketahfizhan /kesantrian /keuangan; do
+          for p in / /akademik /akademik/absensi /ketahfizhan /kesantrian /keuangan; do
             curl -fsS -o /tmp/response.html "http://127.0.0.1:32345$p"
             grep -q IMTAQ /tmp/response.html
           done
           code="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:32345/not-a-real-module)"
           [ "$code" = 404 ]
+          # Attendance is public synthetic preview, not an authenticated or operational endpoint.
+          curl -fsS http://127.0.0.1:32345/akademik/absensi | grep -q "Absensi Kehadiran Akademik"
       - name: Upload reviewed Passenger build artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
