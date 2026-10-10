@@ -8,6 +8,9 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "node --test",
-    "security:scan": "git grep -n -I -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{20,}|xox[baprs]-|password[[:space:]]*[:=])' -- . ':(exclude)docs/product-sources' || true"
+    "security:scan": "node scripts/gaqi/ci.mjs security"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
   }
 }
