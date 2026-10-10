@@ -40,7 +40,9 @@ jobs:
       - name: Affected application / contract tests
         if: steps.scope.outputs.tests == 'true'
         run: npm test
+      - name: Install locked TypeScript (only when needed)
+        if: steps.scope.outputs.typecheck == 'true'
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Typecheck affected TypeScript (never silently skip)
         if: steps.scope.outputs.typecheck == 'true'
-        run: |
-          npm exec --yes --package=typescript@5.9.3 -- tsc --noEmit
+        run: npm run typecheck
