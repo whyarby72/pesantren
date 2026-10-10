@@ -10,7 +10,5 @@
     "test": "node --experimental-strip-types --test",
     "security:scan": "node scripts/gaqi/ci.mjs security"
   },
-  "devDependencies": {
-    "typescript": "5.9.3"
-  }
+  "devDependencies": { "typescript": "5.9.3" }
 }
