@@ -26,7 +26,12 @@ jobs:
       - name: Use a stable Node runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '22'
+          node-version: '24.21.0'
+      - name: Confirm Node.js 24 for IMTAQ host compatibility
+        run: |
+          node --version
+          npm --version
+          node -e "if (process.versions.node.split('.')[0] !== '24') process.exit(1)"
       - name: Plan tests from checked-out diff (fallback full)
         id: scope
         env:
