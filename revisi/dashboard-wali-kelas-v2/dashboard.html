@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>IMTAQ — Dashboard Wali Kelas • Kelas, Apel & Seragam (Demo)</title>
+  <style>
+    :root {
+      --bg: #f6f8f7; --surface: #fff; --line: #e4ebe8; --ink: #172e29; --muted: #70827b;
+      --primary: #146d54; --primary-dark: #0c523e; --primary-soft: #e4f4ed;
+      --blue: #3a72b8; --blue-soft: #eaf2ff; --amber: #ad731e; --amber-soft: #fff4e0;
+      --red: #b24e51; --red-soft: #ffeff0; --shadow: 0 10px 35px rgba(26,59,45,.045);
+      --radius: 15px; --font: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font: 14px/1.5 var(--font); color: var(--ink); margin: 0; background: var(--bg); }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .48; }
+    :focus-visible { outline: 3px solid #61ad92; outline-offset: 2px; }
+    .app { display: grid; grid-template-columns: 228px minmax(0,1fr); min-height: 100vh; }
+    .sidebar { background: #fff; border-right: 1px solid var(--line); padding: 27px 17px 20px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; }
+    .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: #125a48; color: #fff; flex: none; }
+    .brand-mark svg { width: 23px; height: 23px; }
+    .brand-name { font-size: 19px; font-weight: 850; letter-spacing: -.8px; line-height: 1.1; }
+    .brand-sub { display: block; font-size: 10px; color: #85938d; font-weight: 680; letter-spacing: 1.3px; margin-top: 5px; }
+    .nav-label { color: #9ca8a2; font-size: 10px; letter-spacing: 1.8px; font-weight: 850; margin: 46px 15px 12px; }
+    .nav { display: grid; gap: 6px; }
+    .nav-link { border: 0; text-align: left; width: 100%; display: flex; gap: 12px; align-items: center; padding: 12px 15px; background: none; border-radius: 11px; color: #77877f; font-weight: 660; }
+    .nav-link svg { width: 19px; height: 19px; stroke-width: 1.8; flex: none; }
+    .nav-link:hover { background: #f6f8f7; color: var(--ink); }
+    .nav-link.active { background: #e7f5ee; color: #0d644a; font-weight: 800; }
+    .nav-link.active .nav-dot { display: block; }
+    .nav-dot { width: 6px; height: 6px; background: #218264; border-radius: 50%; margin-left: auto; display: none; }
+    .side-bottom { margin-top: auto; }
+    .side-info { border-top: 1px solid var(--line); padding: 21px 10px 0; color: var(--muted); font-size: 12px; }
+    .side-info strong { display: block; color: #34483e; font-weight: 750; margin-bottom: 5px; }
+    .side-tag { margin-top: 12px; font-size: 10px; color: #a0a9a5; letter-spacing: 1px; }
+    .content-shell { min-width: 0; }
+    .main { margin: 0 auto; max-width: 1320px; padding: 26px 46px 54px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; min-height: 43px; gap: 10px; }
+    .breadcrumb { display: flex; align-items: center; color: #9aa8a0; gap: 11px; font-size: 12px; font-weight: 650; }
+    .breadcrumb b { color: #38594b; font-weight: 750; }
+    .breadcrumb .slash { color: #bec9c2; }
+    .top-actions { display: flex; align-items: center; gap: 13px; }
+    .demo-tag { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #f0dfb1; background: #fff9e9; color: #896521; font-size: 11px; font-weight: 750; border-radius: 7px; white-space: nowrap; }
+    .demo-tag:before { content: ''; height: 6px; width: 6px; border-radius: 50%; background: #c89737; }
+    .profile { display: flex; align-items: center; gap: 9px; border-left: 1px solid var(--line); padding-left: 14px; }
+    .profile-circle { border-radius: 12px; background: #e5f0eb; color: #17664c; width: 35px; height: 35px; display: grid; place-items: center; font-size: 11px; font-weight: 850; }
+    .profile-copy { font-size: 12px; line-height: 1.4; }
+    .profile-copy strong { display: block; font-size: 12px; font-weight: 780; }
+    .profile-copy span { color: var(--muted); font-size: 11px; }
+    .mobile-brand { display:none; font-weight: 840; font-size: 18px; letter-spacing: -.6px; }
+    .hero { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 35px 0 27px; }
+    .eyebrow { color: #7a9187; font-size: 10px; letter-spacing: 2px; font-weight: 870; margin: 0 0 5px; }
+    h1 { font-size: clamp(32px,4vw,42px); letter-spacing: -1.5px; margin: 0; line-height: 1.22; font-weight: 830; }
+    .meta { display: flex; gap: 14px; align-items: center; color: #7a8982; margin-top: 9px; font-size: 13px; font-weight: 600; flex-wrap: wrap; }
+    .meta svg { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; }
+    .meta .bullet { color: #c8d1cc; }
+    .hero-note { font-size: 12px; color: #758a80; background: #ebf3ee; border: 1px solid #daebe0; padding: 9px 13px; border-radius: 9px; white-space: nowrap; }
+    .session-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 22px 20px; }
+    .section-label { color: #82948a; text-transform: uppercase; letter-spacing: 1.2px; font-size: 10px; font-weight: 850; }
+    .sessions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 12px; }
+    .session { text-align: left; display: flex; gap: 12px; align-items: center; min-width: 0; padding: 13px 15px; border: 1.5px solid #e4eae6; background: #fafcfb; border-radius: 11px; color: #3e5449; transition: background .15s,border-color .15s,box-shadow .15s; }
+    .session:hover { border-color: #90c8b0; }
+    .session[aria-selected="true"] { background: #e8f6ed; border-color: #3d9b74; box-shadow: 0 0 0 1px #3d9b7440 inset; }
+    .session-index { width: 37px; height: 37px; display: grid; place-items: center; border-radius: 10px; background: #eaf0ed; font-weight: 850; font-size: 12px; flex: none; }
+    .session[aria-selected="true"] .session-index { background: #146d54; color: white; }
+    .session-title { display: block; font-weight: 800; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .session-time { color: #819189; font-size: 12px; font-weight: 550; margin-top: 2px; display: block; }
+    .session[aria-selected="true"] .session-time { color: #507e67; }
+    .session-indicator { margin-left: auto; width: 8px; height: 8px; border: 1px solid #abc4b8; border-radius: 50%; flex: none; }
+    .session[aria-selected="true"] .session-indicator { background: #187753; border-color: #187753; box-shadow: 0 0 0 4px #d1ebda; }
+    .summary { margin: 20px 0; display: grid; grid-template-columns: minmax(200px, .95fr) 1px minmax(330px, 1.3fr); align-items: center; gap: 26px; background: #fff; border: 1px solid var(--line); padding: 19px 25px; border-radius: var(--radius); }
+    .progress-title { font-size: 12px; color: #819188; font-weight: 650; }
+    .progress-number { font-size: 25px; font-weight: 840; letter-spacing: -.7px; line-height: 1.2; margin: 3px 0 10px; }
+    .progress-number small { font-size: 14px; color: #98a59d; font-weight: 660; margin-left: 4px; }
+    .progress-track { width: 100%; height: 7px; background: #edf2ef; border-radius: 100px; overflow: hidden; }
+    .progress-fill { background: #208564; border-radius: inherit; height: 100%; width: 0%; transition: width .25s; }
+    .divider-vertical { background: var(--line); align-self: stretch; }
+    .status-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+    .stat { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+    .stat .num { font-size: 23px; font-weight: 840; letter-spacing: -.9px; line-height: 1.2; }
+    .stat .title { color: #829087; font-size: 11px; font-weight: 660; white-space: nowrap; }
+    .stat .color-dot { height: 7px; width: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: 1px; }
+    .roster-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin: 25px 0 12px; }
+    .roster-title { font-size: 17px; font-weight: 820; margin: 0; letter-spacing: -.3px; }
+    .roster-sub { font-size: 11px; color: #93a097; margin-top: 4px; }
+    .tools { display: flex; gap: 8px; align-items: center; }
+    .search { position: relative; width: 250px; }
+    .search svg { position: absolute; width: 17px; height: 17px; left: 12px; top: 50%; transform: translateY(-50%); color: #a0afa5; pointer-events: none; }
+    .search input { width: 100%; border-radius: 9px; border: 1px solid #dfe8e2; background: #fff; padding: 10px 12px 10px 37px; min-height: 40px; outline-offset: 1px; }
+    .search input::placeholder { color: #a3b1a8; }
+    .filter { border: 1px solid #dfe8e2; background: #fff; padding: 10px 28px 10px 12px; border-radius: 9px; height: 40px; color: #536b5e; max-width: 155px; }
+    .roster { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .roster-header { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 13px 24px; border-bottom: 1px solid #e8eeea; background: #fbfcfb; }
+    .roster-header > span { color: #9aa99e; letter-spacing: 1.5px; font-weight: 840; font-size: 10px; }
+    .roster-header > span:last-child { text-align: center; width: 202px; }
+    .roster-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 10px 21px 10px 23px; border-bottom: 1px solid #edf1ee; min-height: 65px; }
+    .roster-row:last-child { border-bottom: none; }
+    .roster-row:hover { background: #fbfdfc; }
+    .person { display: flex; align-items: center; min-width: 0; gap: 13px; }
+    .person-index { background: #eff5f1; color: #719080; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 11px; font-weight: 800; flex: none; }
+    .person-name { font-size: 13px; font-weight: 780; color: #263d32; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .person-id { font-size: 11px; color: #acb8b0; margin-top: 1px; }
+    .saved-mark { margin-left: 5px; color: #17805e; font-weight: 850; font-size: 10px; }
+    .status-group { display: flex; gap: 6px; align-items: center; }
+    .status-btn { height: 36px; width: 43px; border: 1px solid #e0e8e2; background: #fff; border-radius: 9px; font-size: 12px; font-weight: 820; color: #94a49a; transition: transform .1s,background .12s,border-color .12s; }
+    .status-btn:hover { border-color: #a6c3b0; background: #f6faf7; }
+    .status-btn:active { transform: scale(.95); }
+    .status-btn[data-code="H"][aria-pressed="true"] { background: var(--primary-soft); color: var(--primary); border-color: #8bc8ac; }
+    .status-btn[data-code="I"][aria-pressed="true"] { background: var(--blue-soft); color: var(--blue); border-color: #a3c5ed; }
+    .status-btn[data-code="S"][aria-pressed="true"] { background: var(--amber-soft); color: var(--amber); border-color: #ebc58f; }
+    .status-btn[data-code="A"][aria-pressed="true"] { background: var(--red-soft); color: var(--red); border-color: #ebb3b5; }
+    .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+    .save-bar { position: sticky; bottom: 13px; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 18px; border-radius: 13px; padding: 13px 16px 13px 20px; margin-top: 15px; border: 1px solid #d5e4d9; background: #ffffffef; box-shadow: 0 15px 45px rgba(16,53,40,.12); backdrop-filter: blur(18px); }
+    .save-left { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; min-width: 0; }
+    .verify { display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 690; cursor: pointer; }
+    .verify input { accent-color: #12684e; width: 17px; height: 17px; margin: 0; cursor: pointer; flex: none; }
+    .save-right { display: flex; gap: 14px; align-items: center; }
+    .pending { color: #84958a; white-space: nowrap; font-size: 12px; font-weight: 730; }
+    .btn { border-radius: 9px; border: 1px solid #d7e3db; background: #fff; color: #2e6550; font-weight: 750; padding: 10px 15px; min-height: 41px; white-space: nowrap; }
+    .btn:hover:not(:disabled) { background: #edf6f0; }
+    .btn.primary { border-color: #146d54; color: #fff; background: #146d54; padding: 10px 21px; box-shadow: 0 3px 8px #10583f22; }
+    .btn.primary:hover:not(:disabled) { background: #0e5743; }
+    .bottom-caption { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; color: #a2afa6; font-size: 11px; }
+    .text-link { border: 0; color: #71897a; background: none; text-decoration: underline; text-underline-offset: 3px; padding: 3px 0; }
+    .toast { position: fixed; right: 22px; bottom: 95px; background: #183b2c; color: white; padding: 12px 17px; font-size: 12px; font-weight: 650; border-radius: 10px; z-index: 50; box-shadow: 0 10px 30px #10372630; max-width: min(380px,calc(100vw - 32px)); visibility: hidden; transform: translateY(10px); opacity: 0; transition: transform .2s,opacity .2s,visibility .2s; }
+    .toast.show { visibility: visible; transform: translateY(0); opacity: 1; }
+    .toast.error { background: #9d4545; }
+    dialog { border: 1px solid #d9e7dc; border-radius: 16px; padding: 0; width: min(430px,calc(100vw - 32px)); box-shadow: 0 22px 90px #123e3136; color: var(--ink); }
+    dialog::backdrop { background: #10291e88; backdrop-filter: blur(2px); }
+    .dialog-body { padding: 24px; }
+    .dialog-head { font-size: 20px; font-weight: 820; letter-spacing: -.6px; margin: 0 0 7px; }
+    .dialog-info { font-size: 13px; color: var(--muted); margin: 0 0 18px; }
+    .dialog-field { display: grid; gap: 7px; font-size: 12px; font-weight: 750; }
+    .dialog-field textarea { width: 100%; min-height: 90px; resize: vertical; border-radius: 9px; border: 1px solid #d9e4dc; padding: 10px; }
+    .dialog-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+    @media (max-width: 1080px) { .main { padding: 22px 26px 42px; } .app { grid-template-columns: 76px minmax(0,1fr); } .sidebar { padding: 22px 11px; align-items: center; } .brand { padding: 0; } .brand-text,.nav-label,.nav-link .nav-name,.nav-dot,.side-bottom { display:none!important; } .nav { margin-top: 40px; } .nav-link { padding: 13px; justify-content: center; } .summary { gap: 16px; } }
+    @media (max-width: 720px) { .app { display:block; } .sidebar { display:none; } .main { padding: 16px 17px 35px; } .breadcrumb { display: none; } .mobile-brand { display:block; } .top-actions { gap: 9px; } .profile-copy { display:none; } .profile { padding-left: 8px; } .hero { padding: 30px 0 19px; align-items: flex-start; } .hero-note { display:none; } h1 { font-size: 34px; } .sessions { gap: 9px; } .session-panel { padding: 15px; } .session { padding: 11px; gap: 8px; } .session-index { width: 33px; height: 33px; } .session-indicator { display:none; } .summary { padding: 15px 18px; grid-template-columns: 1fr; gap: 15px; margin: 15px 0; } .divider-vertical { display:none; } .status-stats { border-top: 1px solid var(--line); padding-top: 13px; } .roster-head { align-items: flex-start; flex-direction: column; margin-top: 23px; } .tools,.search { width:100%; } .search { flex: 1; } .roster-header { padding: 12px 17px; } .roster-header>span:last-child { width: 178px; } .roster-row { padding: 10px 13px 10px 16px; } .status-group { gap: 4px; } .status-btn { min-width: 40px; width: 40px; height: 42px; } .person { gap: 9px; } .person-index { width: 30px; height: 33px; } .save-bar { bottom: 8px; flex-wrap: wrap; padding: 12px; } .save-left,.save-right { width:100%; justify-content: space-between; } .save-right { border-top: 1px solid var(--line); padding-top: 10px; } .btn { padding: 9px 12px; } .bottom-caption { flex-wrap: wrap; } }
+    @media (max-width: 385px) { .main { padding-left: 12px; padding-right: 12px; } .session-index { display:none; } .session { padding: 11px 9px; } .status-btn { width: 38px; min-width: 38px; height: 41px; } .roster-row { padding-left: 11px; padding-right: 10px; } .person-index { display:none; } .person-name { font-size: 12px; } .roster-header>span:last-child { width: 166px; } .filter { max-width: 126px; } }
+    @media (prefers-reduced-motion: reduce) { *, *:before, *:after { transition: none!important; scroll-behavior:auto!important; } }
+
+    /* Integrated daily checks — visually restrained, same design tokens */
+    [hidden] { display: none !important; }
+    .workflow-tabs { display:flex; gap:9px; margin: 0 0 18px; padding: 5px; width:fit-content; max-width:100%; border-radius:12px; background:#eaf0eb; border:1px solid #dfe8e1; }
+    .workflow-tab { display:inline-flex; gap:9px; align-items:center; justify-content:center; padding:11px 17px; border-radius:9px; border:0; background:transparent; color:#698174; font-weight:820; font-size:13px; min-height:44px; }
+    .workflow-tab[aria-selected="true"] { background:#fff; color:#146d54; box-shadow:0 1px 7px #123b2916; }
+    .workflow-tab .tab-num { display:grid; place-items:center; width:21px; height:21px; border-radius:7px; background:#dce9e1; font-size:11px; }
+    .workflow-tab[aria-selected="true"] .tab-num { color:#fff; background:#146d54; }
+    .daily-card { background:#fff; border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:21px 24px; }
+    .daily-heading { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; }
+    .daily-heading h2 { font-size:19px; margin:0 0 2px; letter-spacing:-.4px; }
+    .daily-heading p { margin:0; color:#84958a; font-size:12px; }
+    .daily-total { display:flex; gap:6px; align-items:baseline; border-radius:10px; padding:7px 13px; background:#e7f5ee; color:#165e48; font-size:12px; }
+    .daily-total strong { font-size:19px; }
+    .daily-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin-top:18px; gap:12px; }
+    .daily-metric { border:1px solid #e7eee9; background:#fbfdfb; border-radius:11px; padding:12px 14px; }
+    .daily-metric strong { display:block; font-size:24px; font-weight:840; letter-spacing:-.7px; line-height:1.22; }
+    .daily-metric span { font-size:11px; color:#83948a; font-weight:700; }
+    .daily-notice { margin:16px 0 0; border:1px solid #e7e8d4; background:#fffdf1; color:#826525; border-radius:10px; padding:12px 15px; font-size:12px; }
+    .daily-roster-head { display:flex; justify-content:space-between; gap:12px; align-items:center; margin:25px 0 12px; }
+    .daily-table-head { background:#fafcfb; border-bottom:1px solid #e8eee8; display:grid; grid-template-columns:minmax(185px,1fr) 230px 240px; gap:12px; padding:13px 19px; color:#8ca095; letter-spacing:1.2px; font-size:10px; font-weight:840; }
+    .daily-row { display:grid; grid-template-columns:minmax(185px,1fr) 230px 240px; gap:12px; align-items:center; padding:12px 18px; border-bottom:1px solid #ebf0ed; min-height:67px; }
+    .daily-row:last-child { border-bottom:0; }
+    .daily-row:hover { background:#fbfdfc; }
+    .daily-controls { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+    .daily-control { min-height:39px; padding:8px 11px; border:1px solid #dce8e1; border-radius:9px; background:#fff; color:#708b7b; font-weight:760; font-size:11px; }
+    .daily-control:hover:not(:disabled) { border-color:#83ae94; background:#f6faf7; }
+    .daily-control[aria-pressed="true"] { color:#12644b; border-color:#6fb394; background:#e3f3e9; }
+    .daily-control.negative[aria-pressed="true"] { color:#a05c30; border-color:#ecc9a0; background:#fff3e4; }
+    .daily-control.late[aria-pressed="true"] { color:#3a72b8; border-color:#a3c5ed; background:#eaf2ff; }
+    .daily-item-detail { display:block; font-size:11px; color:#af6f31; font-weight:690; margin-top:4px; }
+    .daily-action-bar { display:flex; gap:15px; align-items:center; flex-wrap:wrap; justify-content:space-between; padding:15px 17px; margin-top:15px; border:1px solid #d5e4d9; background:#fff; box-shadow:0 15px 45px #10352818; border-radius:13px; position:sticky; bottom:9px; z-index:9; }
+    .bulk-area { display:grid; gap:10px; }
+    .bulk-area > div { display:flex; gap:9px; align-items:center; flex-wrap:wrap; }
+    .daily-pending { display:flex; align-items:center; gap:12px; }
+    .daily-empty { padding:36px 22px; color:#6b8074; text-align:center; background:#fff; border-radius:12px; }
+    .daily-empty .btn { margin-top:12px; }
+    .check-items { display:grid; gap:10px; margin:11px 0; }
+    .check-items label { display:flex; align-items:center; gap:11px; border:1px solid #e1ebe5; border-radius:10px; padding:12px 13px; cursor:pointer; font-size:13px; font-weight:720; }
+    .check-items input { accent-color:#176d51; width:17px; height:17px; }
+    @media(max-width:1080px){ .daily-table-head,.daily-row {grid-template-columns:minmax(160px,1fr) 196px 200px;} .daily-control {padding:8px 9px;} }
+    @media(max-width:800px){
+      .daily-table-head{display:none;} .daily-row {grid-template-columns:1fr 1fr; gap:12px; padding:16px;}
+      .daily-row .person {grid-column:1 / -1;} .daily-controls {align-items:flex-start;}
+      .daily-controls:before {content:attr(data-label); width:100%; display:block; text-transform:uppercase; font-size:10px; font-weight:800; color:#8d9e94; letter-spacing:1px;}
+      .daily-card {padding:17px;} .daily-roster-head {align-items:stretch;} .daily-metrics {gap:8px;}
+    }
+    @media(max-width:500px){
+      .workflow-tabs{width:100%;} .workflow-tab {flex:1; padding:10px 7px; font-size:12px;}
+      .daily-row{grid-template-columns:1fr;} .daily-row .person {grid-column:1;}
+      .daily-controls {width:100%;} .daily-controls:before {width:100%;} .daily-control {flex:1;}
+      .daily-metrics {grid-template-columns:repeat(3,minmax(0,1fr));} .daily-metric {padding:10px 8px;} .daily-metric strong {font-size:21px;}
+      .daily-metric span {font-size:10px;}
+      .daily-roster-head {flex-direction:column;align-items:stretch;} .daily-roster-head .search{width:100%;}
+      .daily-action-bar {bottom:5px;display:block;padding:12px;} .bulk-area {gap:8px;} .bulk-area > div {justify-content:space-between;}
+      .daily-pending {border-top:1px solid #e5ece7;padding-top:10px;justify-content:space-between;margin-top:12px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Navigasi contoh">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3C7 7 5.1 11.5 6.7 15.3 8 18.2 11 19.8 15 20c-2.4-1.1-4-3.3-4-6.2 0-3.4 1.5-6.7 4.8-10.8H12Z" fill="currentColor"/><path d="m16.3 8.4.65 1.7 1.75.07-1.38 1.08.47 1.7-1.49-.96-1.49.96.47-1.7-1.38-1.08 1.75-.07.65-1.7Z" fill="currentColor"/></svg></span>
+        <span class="brand-text"><span class="brand-name">imtaq.</span><span class="brand-sub">PESANTREN SYSTEM</span></span>
+      </div>
+      <div class="nav-label">MENU UTAMA</div>
+      <nav class="nav">
+        <button class="nav-link" data-demo-nav="Beranda" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="nav-name">Beranda</span></button>
+        <button class="nav-link active" type="button" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5h6M9 10h6M9 14h3m-3 3 1.5 1.5L14 15"/></svg><span class="nav-name">Absensi</span><span class="nav-dot"></span></button>
+        <button class="nav-link" data-demo-nav="Jadwal" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18"/></svg><span class="nav-name">Jadwal</span></button>
+        <button class="nav-link" data-demo-nav="Rekap" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9m5 11V4m5 16v-7m5 7V7"/></svg><span class="nav-name">Rekap</span></button>
+      </nav>
+      <div class="side-bottom"><div class="side-info"><strong>Wali Kelas 1</strong>Semester I · 2026/2027<div class="side-tag">HTML PROTOTYPE V1.0</div></div></div>
+    </aside>
+    <div class="content-shell">
+      <main class="main">
+        <div class="topbar">
+          <div class="breadcrumb"><span>Akademik</span><span class="slash">/</span><b>Absensi Harian</b></div>
+          <div class="mobile-brand">imtaq.</div>
+          <div class="top-actions"><span class="demo-tag">DEMO INTERAKTIF</span><div class="profile"><div class="profile-circle" aria-hidden="true">WK</div><div class="profile-copy"><strong>Wali Kelas 1</strong><span>Akses kelas sendiri</span></div></div></div>
+        </div>
+        <section class="hero" aria-labelledby="page-title">
+          <div><p class="eyebrow">ABSENSI HARIAN</p><h1 id="page-title">Kelas 1</h1><div class="meta"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18"/></svg> Selasa, 13 Oktober 2026</span><span class="bullet">·</span><span>20 santri</span></div></div>
+          <div class="hero-note">Data anonim · contoh tampilan</div>
+        </section>
+
+        <div class="workflow-tabs" role="tablist" aria-label="Pekerjaan wali kelas">
+          <button type="button" id="workflow-kelas" class="workflow-tab" role="tab" aria-selected="true" aria-controls="view-kelas" data-workflow="kelas"><span class="tab-num">1</span> Absensi Kelas</button>
+          <button type="button" id="workflow-pagi" class="workflow-tab" role="tab" aria-selected="false" aria-controls="view-pagi" data-workflow="pagi"><span class="tab-num">2</span> Apel &amp; Seragam</button>
+        </div>
+        <div id="view-kelas" role="tabpanel" aria-labelledby="workflow-kelas">
+        <section class="session-panel" aria-label="Pilih sesi pelajaran">
+          <span class="section-label">SESI PELAJARAN</span>
+          <div class="sessions" role="tablist" aria-label="Pilih sesi pelajaran">
+            <button id="tab-s1" type="button" class="session" role="tab" aria-selected="true" aria-controls="roster-panel" data-session="s1"><span class="session-index">S1</span><span style="min-width:0"><span class="session-title">Bahasa Arab</span><span class="session-time">07.00 – 09.30</span></span><span class="session-indicator" aria-hidden="true"></span></button>
+            <button id="tab-s2" type="button" class="session" role="tab" aria-selected="false" aria-controls="roster-panel" data-session="s2"><span class="session-index">S2</span><span style="min-width:0"><span class="session-title">Bahasa Arab</span><span class="session-time">10.15 – 11.30</span></span><span class="session-indicator" aria-hidden="true"></span></button>
+          </div>
+        </section>
+        <section class="summary" aria-label="Ringkasan kehadiran">
+          <div><div class="progress-title">Status kehadiran</div><div class="progress-number"><span id="count-done">0</span><small>/ 20 dicatat</small></div><div class="progress-track" role="progressbar" aria-label="Status terisi" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0" id="progress-track"><div id="progress-fill" class="progress-fill"></div></div></div>
+          <div class="divider-vertical" aria-hidden="true"></div>
+          <div class="status-stats"><div class="stat"><div id="count-h" class="num">0</div><span class="title"><span class="color-dot" style="background:#218564"></span>Hadir</span></div><div class="stat"><div id="count-i" class="num">0</div><span class="title"><span class="color-dot" style="background:#4784cc"></span>Izin</span></div><div class="stat"><div id="count-s" class="num">0</div><span class="title"><span class="color-dot" style="background:#d3a248"></span>Sakit</span></div><div class="stat"><div id="count-a" class="num">0</div><span class="title"><span class="color-dot" style="background:#ce7373"></span>Alpa</span></div></div>
+        </section>
+        <section id="roster-panel" role="tabpanel" aria-labelledby="tab-s1">
+          <div class="roster-head"><div><h2 class="roster-title">Daftar santri</h2><div class="roster-sub">Pilih status setiap santri</div></div><div class="tools"><label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.7"/><path d="m16 16 5 5"/></svg><span class="sr-only">Cari santri</span><input id="search" type="search" placeholder="Cari santri..." autocomplete="off" /></label><label><span class="sr-only">Filter status santri</span><select class="filter" id="filter"><option value="all">Semua</option><option value="empty">Belum dicatat</option><option value="exception">Izin / Sakit / Alpa</option></select></label></div></div>
+          <div class="roster"><div class="roster-header"><span>NAMA SANTRI</span><span>STATUS KEHADIRAN</span></div><div id="roster-rows"></div></div>
+          <div class="save-bar"><div class="save-left"><label class="verify"><input id="verified" type="checkbox" /><span>Santri lainnya sudah diperiksa</span></label><button class="btn" id="bulk-hadir" type="button" disabled>Sisa → Hadir</button></div><div class="save-right"><span class="pending" id="pending">0 perubahan</span><button class="btn primary" id="save" type="button" disabled>Simpan</button></div></div>
+          <div class="bottom-caption"><span>Rancangan HTML: simpan hanya simulasi di tab browser ini, bukan ke server IMTAQ.</span><button class="text-link" id="reset-demo" type="button">Reset demo</button></div>
+        </section>
+
+        </div>
+        <section id="view-pagi" role="tabpanel" aria-labelledby="workflow-pagi" hidden>
+          <div class="daily-card">
+            <div class="daily-heading"><div><div class="section-label">PEMERIKSAAN HARIAN · SEKALI PER HARI</div><h2>Apel &amp; kedisiplinan</h2><p>Hanya santri yang telah tercatat Hadir dalam sesi kelas yang tersimpan.</p></div><span class="daily-total"><strong id="eligible-total">0</strong> santri hadir</span></div>
+            <div class="daily-metrics" aria-label="Ringkasan pemeriksaan">
+              <div class="daily-metric"><strong id="apel-done">0/0</strong><span>Apel diperiksa</span></div>
+              <div class="daily-metric"><strong id="uniform-done">0/0</strong><span>Seragam diperiksa</span></div>
+              <div class="daily-metric"><strong id="uniform-issues">0</strong><span>Seragam kurang</span></div>
+            </div>
+            <p id="daily-notice" class="daily-notice" role="status">Simpan terlebih dahulu absensi kelas untuk melihat santri yang hadir.</p>
+          </div>
+          <div class="daily-roster-head"><div><h2 class="roster-title">Santri hadir</h2><div class="roster-sub">Apel dan seragam tidak otomatis dianggap lengkap.</div></div><label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.7"/><path d="m16 16 5 5"/></svg><span class="sr-only">Cari santri hadir</span><input id="daily-search" type="search" placeholder="Cari santri..." autocomplete="off" /></label></div>
+          <div class="roster"><div class="daily-table-head"><span>NAMA SANTRI</span><span>KEHADIRAN APEL</span><span>SERAGAM · BAJU / CELANA / PECI</span></div><div id="daily-rows"></div></div>
+          <div class="daily-action-bar">
+            <div class="bulk-area">
+              <div><label class="verify"><input id="apel-verified" type="checkbox" /> Sudah memeriksa apel</label><button id="bulk-apel" class="btn" type="button" disabled>Sisa → Ikut</button></div>
+              <div><label class="verify"><input id="uniform-verified" type="checkbox" /> Sudah memeriksa seragam</label><button id="bulk-uniform" class="btn" type="button" disabled>Sisa → Lengkap</button></div>
+            </div>
+            <div class="daily-pending"><span class="pending" id="daily-pending">0 perubahan</span><button class="btn primary" id="daily-save" type="button" disabled>Simpan Pemeriksaan</button></div>
+          </div>
+          <div class="bottom-caption">Demo lokal: catatan apel dan seragam tidak dikirim ke server maupun sistem resmi.</div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="correction-dialog" aria-labelledby="correction-heading">
+    <form id="correction-form" class="dialog-body"><h2 id="correction-heading" class="dialog-head">Koreksi kehadiran</h2><p class="dialog-info" id="correction-desc">Perubahan setelah penyimpanan harus disertai alasan.</p><label class="dialog-field">Alasan koreksi<textarea id="correction-reason" placeholder="Contoh: status dikonfirmasi ulang oleh wali kelas" minlength="8" maxlength="400" required></textarea></label><div class="dialog-actions"><button id="cancel-correction" type="button" class="btn">Batal</button><button type="submit" class="btn primary">Simpan koreksi</button></div></form>
+  </dialog>
+
+  <dialog id="uniform-dialog" aria-labelledby="uniform-heading">
+    <form id="uniform-form" class="dialog-body"><h2 id="uniform-heading" class="dialog-head">Atribut seragam kurang</h2><p id="uniform-description" class="dialog-info">Pilih atribut yang telah diperiksa dan tidak lengkap.</p><div class="check-items">
+      <label><input type="checkbox" name="missing-item" value="baju" /> Baju</label>
+      <label><input type="checkbox" name="missing-item" value="celana" /> Celana</label>
+      <label><input type="checkbox" name="missing-item" value="peci" /> Peci</label>
+    </div><div class="dialog-actions"><button type="button" class="btn" id="uniform-cancel">Batal</button><button type="submit" class="btn primary">Tandai kurang</button></div></form>
+  </dialog>
+  <script>
+    (() => {
+      'use strict';
+      const SESSION_KEY = 'imtaq-wali-dashboard-demo-v2';
+      const PEOPLE = Array.from({length:20}, (_,i) => ({id:`K1-${String(i+1).padStart(3,'0')}`,num:String(i+1).padStart(2,'0'),name:`Santri ${String(i+1).padStart(2,'0')}`}));
+      const LABEL = {H:'Hadir',I:'Izin',S:'Sakit',A:'Alpa'};
+      const blank = () => ({s1:{},s2:{}});
+      const defaultState = () => ({drafts:blank(),saved:blank(),audit:[],active:'s1',verified:{s1:false,s2:false},view:'kelas',daily:{apel:{},uniform:{},savedApel:{},savedUniform:{},audit:[],verified:{apel:false,uniform:false}}});
+      let state = defaultState();
+      try {const raw=sessionStorage.getItem(SESSION_KEY); if(raw){const loaded=JSON.parse(raw); if(loaded && loaded.drafts && loaded.saved && loaded.verified) state={...defaultState(),...loaded};}} catch (_) {}
+      state.active = ['s1','s2'].includes(state.active) ? state.active : 's1';
+      state.view = ['kelas','pagi'].includes(state.view) ? state.view : 'kelas';
+      state.daily = {...defaultState().daily,...(state.daily||{})};
+      let correctionTarget = null;
+      let uniformTarget = null;
+      let toastTimer;
+      const $ = id => document.getElementById(id);
+      const toast = (message,error=false) => {let node=$('toast'); node.textContent=message;node.classList.toggle('error',error);node.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>node.classList.remove('show'),4000);};
+      const persist = () => { try {sessionStorage.setItem(SESSION_KEY,JSON.stringify(state));} catch (_) {} };
+      const getDraft = () => state.drafts[state.active] || (state.drafts[state.active]={});
+      const getSaved = () => state.saved[state.active] || (state.saved[state.active]={});
+      const current = (id) => getDraft()[id] || '';
+      const pendingCount = () => PEOPLE.filter(p => (getDraft()[p.id] || '') !== (getSaved()[p.id] || '')).length;
+      const updateOverview = () => {
+        const counts = {H:0,I:0,S:0,A:0};PEOPLE.forEach(p=> {const v=current(p.id);if(counts[v]!==undefined) counts[v]++;});
+        const done=counts.H+counts.I+counts.S+counts.A;
+        $('count-done').textContent=done;
+        for(const key of Object.keys(counts)) $('count-'+key.toLowerCase()).textContent=counts[key];
+        $('progress-fill').style.width=(done/PEOPLE.length*100)+'%';
+        $('progress-track').setAttribute('aria-valuenow',done);
+        const n=pendingCount();$('pending').textContent=n+' perubahan';
+        $('save').disabled=!(n && done===PEOPLE.length);
+        const fullySaved=PEOPLE.every(p=>!!getSaved()[p.id]);
+        $('bulk-hadir').disabled=!state.verified[state.active] || fullySaved || !PEOPLE.some(p=>!current(p.id));
+        $('verified').checked=!!state.verified[state.active];
+        $('verified').disabled=fullySaved;
+        $('save').textContent=fullySaved && !n ? 'Tersimpan ✓' : 'Simpan';
+      };
+      const newStatusButton=(p,code)=>{
+        const b=document.createElement('button');b.type='button';b.className='status-btn';b.dataset.code=code;
+        b.textContent=code;const selected=current(p.id)===code;
+        b.setAttribute('aria-label',`${LABEL[code]} untuk ${p.name}`);b.setAttribute('aria-pressed',String(selected));b.title=LABEL[code];
+        b.addEventListener('click',()=>{
+          const wasSaved=getSaved()[p.id] || '';
+          if(wasSaved && wasSaved !== code){correctionTarget={person:p,code};$('correction-desc').textContent=`${p.name}: ${LABEL[wasSaved]} → ${LABEL[code]}. Masukkan alasan perubahan.`;$('correction-reason').value='';$('correction-dialog').showModal();return;}
+          if(wasSaved && wasSaved===code) return;
+          getDraft()[p.id]=current(p.id)===code ? '' : code;
+          persist();render();
+        });return b;
+      };
+      const renderRoster=()=>{
+        const search=$('search').value.trim().toLocaleLowerCase('id');const filter=$('filter').value;
+        const node=$('roster-rows');node.replaceChildren();
+        let visible=0;
+        for(const p of PEOPLE){
+          if(search && !(p.name+' '+p.id).toLocaleLowerCase('id').includes(search))continue;
+          const v=current(p.id);if(filter==='empty'&&v)continue;if(filter==='exception'&&!['I','S','A'].includes(v))continue;
+          visible++;
+          const row=document.createElement('div');row.className='roster-row';row.dataset.student=p.id;
+          const person=document.createElement('div');person.className='person';
+          const idx=document.createElement('span');idx.className='person-index';idx.textContent=p.num;
+          const details=document.createElement('div');details.style.minWidth='0';
+          const name=document.createElement('div');name.className='person-name';name.textContent=p.name;
+          if(getSaved()[p.id]){const tick=document.createElement('span');tick.className='saved-mark';tick.title='Pernah disimpan dalam demo';tick.textContent='✓';name.append(tick);}
+          const id=document.createElement('div');id.className='person-id';id.textContent=p.id;
+          details.append(name,id);person.append(idx,details);
+          const actions=document.createElement('div');actions.className='status-group';actions.setAttribute('role','group');actions.setAttribute('aria-label',`Status ${p.name}`);
+          ['H','I','S','A'].forEach(s=>actions.append(newStatusButton(p,s)));
+          row.append(person,actions);node.append(row);
+        }
+        if(!visible){const empty=document.createElement('div');empty.className='empty';empty.textContent='Tidak ada santri yang sesuai filter.';node.append(empty);}
+      };
+      const render = () => {document.querySelectorAll('[data-session]').forEach(tab=>tab.setAttribute('aria-selected',String(tab.dataset.session===state.active)));$('roster-panel').setAttribute('aria-labelledby','tab-'+state.active);renderRoster();updateOverview();renderDaily();$('view-kelas').hidden=state.view!=='kelas';$('view-pagi').hidden=state.view!=='pagi';document.querySelectorAll('[data-workflow]').forEach(tab=>tab.setAttribute('aria-selected',String(tab.dataset.workflow===state.view)));};
+
+      // One daily observation per student; eligible only after a saved H in a class session.
+      // Ineligible students never receive an Apel or uniform status by default.
+      const eligiblePeople = () => PEOPLE.filter(p=>['s1','s2'].some(s=>state.saved[s]?.[p.id]==='H'));
+      const equalValue = (a,b) => JSON.stringify(a??null)===JSON.stringify(b??null);
+      const daySavedKey = kind => kind==='apel'?'savedApel':'savedUniform';
+      const currentDaily = (kind,id) => state.daily[kind][id]??null;
+      const savedDaily = (kind,id) => state.daily[daySavedKey(kind)][id]??null;
+      const pendingDailyCount = () => eligiblePeople().reduce((n,p)=>n+['apel','uniform'].filter(kind=>!equalValue(currentDaily(kind,p.id),savedDaily(kind,p.id))).length,0);
+      const reconcileDailyEligibility = () => {
+        const eligible=new Set(eligiblePeople().map(p=>p.id));
+        for(const p of PEOPLE){
+          if(eligible.has(p.id)) continue;
+          for(const kind of ['apel','uniform']){
+            const old=currentDaily(kind,p.id), oldSaved=savedDaily(kind,p.id);
+            if(old!==null || oldSaved!==null){
+              state.daily.audit.push({student:p.id,kind,action:'eligibility_revoked',previous:{draft:old,saved:oldSaved},at:new Date().toISOString()});
+              delete state.daily[kind][p.id];delete state.daily[daySavedKey(kind)][p.id];
+            }
+          }
+        }
+      };
+      const setDaily = (p,kind,value) => {
+        if(!eligiblePeople().some(x=>x.id===p.id)){toast('Pemeriksaan hanya untuk santri yang telah tercatat Hadir.',true);return;}
+        const oldSaved=savedDaily(kind,p.id);
+        if(oldSaved!==null && !equalValue(oldSaved,value)){
+          correctionTarget={kind:'daily',dailyKind:kind,person:p,code:value};
+          $('correction-desc').textContent=`${p.name}: perubahan hasil pemeriksaan ${kind==='apel'?'apel':'seragam'} harus disertai alasan.`;
+          $('correction-reason').value='';$('correction-dialog').showModal();return;
+        }
+        if(equalValue(oldSaved,value)) return;
+        state.daily[kind][p.id]=equalValue(currentDaily(kind,p.id),value)?null:value;
+        persist();renderDaily();
+      };
+      const dailyButton = (p,kind,label,value,extra='') => {
+        const b=document.createElement('button');b.type='button';b.className='daily-control '+extra;b.textContent=label;
+        b.setAttribute('aria-label',`${label} — ${p.name}`);
+        b.setAttribute('aria-pressed',String(kind==='uniform' ? currentDaily(kind,p.id)?.status===value.status : equalValue(currentDaily(kind,p.id),value)));
+        b.addEventListener('click',()=>setDaily(p,kind,value));return b;
+      };
+      const renderDaily = () => {
+        const eligible=eligiblePeople();const done=kind=>eligible.filter(p=>currentDaily(kind,p.id)!==null).length;
+        $('eligible-total').textContent=eligible.length;
+        $('apel-done').textContent=`${done('apel')}/${eligible.length}`;
+        $('uniform-done').textContent=`${done('uniform')}/${eligible.length}`;
+        $('uniform-issues').textContent=eligible.filter(p=>currentDaily('uniform',p.id)?.status==='missing').length;
+        $('daily-notice').hidden=!!eligible.length;
+        $('daily-notice').textContent=eligible.length ? '' : 'Belum ada santri Hadir yang tersimpan di sesi kelas. Simpan absensi kelas terlebih dahulu.';
+        const node=$('daily-rows');node.replaceChildren();
+        const q=$('daily-search').value.trim().toLocaleLowerCase('id');let visible=0;
+        for(const p of eligible){
+          if(q && !(p.name+' '+p.id).toLocaleLowerCase('id').includes(q))continue;visible++;
+          const row=document.createElement('div');row.className='daily-row';row.dataset.student=p.id;
+          const person=document.createElement('div');person.className='person';
+          const idx=document.createElement('span');idx.className='person-index';idx.textContent=p.num;
+          const details=document.createElement('div');details.style.minWidth='0';
+          const name=document.createElement('div');name.className='person-name';name.textContent=p.name;
+          const caption=document.createElement('div');caption.className='person-id';caption.textContent='Hadir kelas ✓';details.append(name,caption);person.append(idx,details);
+          const apel=document.createElement('div');apel.className='daily-controls';apel.dataset.label='APEL';apel.setAttribute('role','group');apel.setAttribute('aria-label','Apel '+p.name);
+          apel.append(dailyButton(p,'apel','Ikut','ikut'),dailyButton(p,'apel','Tidak','tidak','negative'),dailyButton(p,'apel','Telat','telat','late'));
+          const uniform=document.createElement('div');uniform.className='daily-controls';uniform.dataset.label='SERAGAM';uniform.setAttribute('role','group');uniform.setAttribute('aria-label','Seragam '+p.name);
+          uniform.append(dailyButton(p,'uniform','Lengkap',{status:'complete',missing:[]}));
+          const missingButton=document.createElement('button');missingButton.type='button';missingButton.className='daily-control negative';missingButton.textContent='Kurang';
+          missingButton.setAttribute('aria-pressed',String(currentDaily('uniform',p.id)?.status==='missing'));
+          missingButton.setAttribute('aria-label','Pilih atribut seragam kurang — '+p.name);
+          missingButton.addEventListener('click',()=>{
+            uniformTarget=p;$('uniform-description').textContent=`${p.name} — centang atribut yang kurang.`;
+            const old=currentDaily('uniform',p.id)?.missing||[];
+            document.querySelectorAll('[name="missing-item"]').forEach(x=>x.checked=old.includes(x.value));
+            $('uniform-dialog').showModal();
+          });
+          uniform.append(missingButton);
+          const currentUniform=currentDaily('uniform',p.id);
+          if(currentUniform?.status==='missing' && currentUniform.missing?.length){
+            const note=document.createElement('span');note.className='daily-item-detail';note.textContent='Kurang: '+currentUniform.missing.map(x=>x[0].toUpperCase()+x.slice(1)).join(', ');
+            const wrapper=document.createElement('div');wrapper.append(uniform,note);row.append(person,apel,wrapper);
+          } else row.append(person,apel,uniform);
+          node.append(row);
+        }
+        if(!visible){const empty=document.createElement('div');empty.className='daily-empty';empty.textContent=eligible.length?'Tidak ada santri yang cocok dengan pencarian.':'Tidak ada santri yang memenuhi syarat pemeriksaan.';
+          if(!eligible.length){const jump=document.createElement('button');jump.type='button';jump.className='btn';jump.textContent='Buka Absensi Kelas';jump.addEventListener('click',()=>switchWorkflow('kelas'));empty.append(document.createElement('br'),jump);}node.append(empty);}
+        const pending=pendingDailyCount();$('daily-pending').textContent=pending+' perubahan';$('daily-save').disabled=pending===0;
+        $('apel-verified').checked=!!state.daily.verified.apel;$('uniform-verified').checked=!!state.daily.verified.uniform;
+        $('bulk-apel').disabled=!eligible.length || !state.daily.verified.apel || !eligible.some(p=>currentDaily('apel',p.id)===null);
+        $('bulk-uniform').disabled=!eligible.length || !state.daily.verified.uniform || !eligible.some(p=>currentDaily('uniform',p.id)===null);
+      };
+      const switchWorkflow = (name) => {state.view=name;persist();render();};
+      document.querySelectorAll('[data-workflow]').forEach(tab=>tab.addEventListener('click',()=>switchWorkflow(tab.dataset.workflow)));
+      $('daily-search').addEventListener('input',renderDaily);
+      for(const kind of ['apel','uniform']){
+        $(kind+'-verified').addEventListener('change',e=>{state.daily.verified[kind]=e.target.checked;persist();renderDaily();});
+        $('bulk-'+kind).addEventListener('click',()=>{
+          if(!state.daily.verified[kind])return;
+          const eligible=eligiblePeople(), pending=eligible.filter(p=>currentDaily(kind,p.id)===null);
+          if(!pending.length)return;
+          if(!confirm(`Konfirmasi ${pending.length} santri yang sudah diperiksa: ${kind==='apel'?'Ikut apel':'Seragam lengkap'}? Pengecualian yang ada tidak diubah.`))return;
+          for(const p of pending){state.daily[kind][p.id]=kind==='apel'?'ikut':{status:'complete',missing:[]};}
+          persist();renderDaily();toast(`${pending.length} status ${kind==='apel'?'apel':'seragam'} dikonfirmasi dalam simulasi.`);
+        });
+      }
+      $('uniform-form').addEventListener('submit',e=>{
+        e.preventDefault();if(!uniformTarget)return;
+        const missing=[...document.querySelectorAll('[name="missing-item"]:checked')].map(x=>x.value);
+        if(!missing.length){toast('Pilih minimal satu atribut yang kurang.',true);return;}
+        const p=uniformTarget;uniformTarget=null;$('uniform-dialog').close();setDaily(p,'uniform',{status:'missing',missing});
+      });
+      $('uniform-cancel').addEventListener('click',()=>{$('uniform-dialog').close();uniformTarget=null;});
+      $('uniform-dialog').addEventListener('close',()=>{uniformTarget=null;});
+      $('daily-save').addEventListener('click',()=>{
+        const pending=pendingDailyCount();if(!pending)return;
+        const eligible=eligiblePeople();let saved=0;
+        for(const p of eligible)for(const kind of ['apel','uniform']){
+          const now=currentDaily(kind,p.id), before=savedDaily(kind,p.id);
+          if(now===null || equalValue(now,before))continue;
+          state.daily[daySavedKey(kind)][p.id]=structuredClone(now);
+          state.daily.audit.push({student:p.id,kind,action:'save',after:now,at:new Date().toISOString()});saved++;
+        }
+        state.daily.verified={apel:false,uniform:false};persist();renderDaily();
+        toast(`${saved} hasil pemeriksaan tersimpan sebagai simulasi. Tidak terkirim ke server.`);
+      });
+
+      document.querySelectorAll('[data-session]').forEach(tab=>tab.addEventListener('click',()=>{state.active=tab.dataset.session;persist();render();}));
+      $('search').addEventListener('input',renderRoster);
+      $('filter').addEventListener('change',renderRoster);
+      $('verified').addEventListener('change',e=>{state.verified[state.active]=e.target.checked;persist();updateOverview();});
+      $('bulk-hadir').addEventListener('click',()=>{
+        if(!state.verified[state.active]){toast('Periksa santri terlebih dahulu.',true);return;}
+        if(PEOPLE.every(p=>!!getSaved()[p.id]))return;
+        const target=getDraft();let count=0;
+        PEOPLE.forEach(p=>{if(!target[p.id]){target[p.id]='H';count++;}});
+        persist();render();toast(`${count} status yang belum dipilih ditandai Hadir (simulasi).`);
+      });
+      $('save').addEventListener('click',()=>{
+        if(PEOPLE.some(p=>!current(p.id))){toast('Lengkapi seluruh status sebelum menyimpan.',true);return;}
+        const n=pendingCount();if(!n)return;
+        const saved=getSaved();const drafts=getDraft();
+        PEOPLE.forEach(p=>{if(saved[p.id]!==drafts[p.id]){saved[p.id]=drafts[p.id];state.audit.push({session:state.active,student:p.id,action:'save',at:new Date().toISOString()});}});
+        state.verified[state.active]=false;reconcileDailyEligibility();persist();render();toast(`Simulasi tersimpan untuk ${n} status. Tidak terkirim ke server.`);
+      });
+      $('correction-form').addEventListener('submit',e=>{
+        e.preventDefault(); const reason=$('correction-reason').value.trim();
+        if(!correctionTarget||reason.length<8){toast('Alasan koreksi minimal 8 karakter.',true);return;}
+        const p=correctionTarget.person;const next=correctionTarget.code;
+        if(correctionTarget.kind==='daily'){
+          const kind=correctionTarget.dailyKind, savedKey=kind==='apel'?'savedApel':'savedUniform';
+          const before=state.daily[savedKey][p.id];state.daily[kind][p.id]=next;state.daily[savedKey][p.id]=next;
+          state.daily.audit.push({student:p.id,kind,action:'correction',before,after:next,reason,at:new Date().toISOString()});
+        }else{
+          const before=getSaved()[p.id];getSaved()[p.id]=next;getDraft()[p.id]=next;
+          state.audit.push({session:state.active,student:p.id,action:'correction',before,after:next,reason,at:new Date().toISOString()});
+          reconcileDailyEligibility();
+        }
+        correctionTarget=null;persist();$('correction-dialog').close();render();toast('Koreksi berhasil disimpan dalam simulasi.');
+      });
+      $('cancel-correction').addEventListener('click',()=>{$('correction-dialog').close();correctionTarget=null;});
+      $('correction-dialog').addEventListener('close',()=>{correctionTarget=null;});
+      $('reset-demo').addEventListener('click',()=>{if(!confirm('Reset semua simulasi status di tab browser ini?'))return;state=defaultState();$('search').value='';$('filter').value='all';$('daily-search').value='';$('apel-verified').checked=false;$('uniform-verified').checked=false;persist();render();toast('Simulasi direset.');});
+      document.querySelectorAll('[data-demo-nav]').forEach(b=>b.addEventListener('click',()=>toast(`${b.dataset.demoNav} belum tersedia pada rancangan HTML ini.`)));
+      window.addEventListener('beforeunload',e=>{const n=['s1','s2'].some(session=>PEOPLE.some(p => ((state.drafts[session]||{})[p.id] || '') !== ((state.saved[session]||{})[p.id] || ''))) || pendingDailyCount()>0;if(n){e.preventDefault();e.returnValue='';}});
+      render();
+    })();
+  </script>
+</body>
+</html>
